@@ -1,40 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'SDMO - Dashboard Pimpinan')
+@section('title', 'Ajukan Konsultasi - Simdiklat')
 
 @section('content')
-    <h2>Buat Pengajuan</h2>
-    <form action="#" method="POST">
-        @csrf
-        
-        <div class="form-group">
-            <label for="tujuan">Tujuan</label>
-            <select id="tujuan" name="tujuan">
-                <option value="">-- Pilih --</option>
-                <option value="konsultasi_teknis">Konsultasi Teknis</option>
-                <option value="konsultasi_sdm">Konsultasi SDM</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="pimpinan">Pimpinan</label>
-            <select id="pimpinan" name="pimpinan">
-                <option value="">-- Pilih Pimpinan --</option>
-                <option value="direktur">Direktur Utama</option>
-                <option value="manajer">Manajer Operasional</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="alasan">Alasan</label>
-            <textarea id="alasan" name="alasan"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="jadwal">Usulkan Jadwal</label>
-            <input type="datetime-local" id="jadwal" name="jadwal">
-        </div>
-
-        <button type="submit" class="btn btn-primary">Kirim</button>
-    </form>
+    {{--
+        File ini (dashboard.blade.php) adalah sisa dari versi lama.
+        Fungsionalitas form konsultasi sudah dipindahkan ke consultation/create.blade.php
+        yang terhubung ke route POST /konsultasi via ConsultationController@store.
+        View ini diredirect untuk menghindari kebingungan.
+    --}}
+    <script>window.location.href = "{{ url('/konsultasi/buat') }}";</script>
+    <p>Mengalihkan ke halaman ajuan konsultasi... <a href="{{ url('/konsultasi/buat') }}">Klik di sini</a> jika tidak otomatis.</p>
 @endsection

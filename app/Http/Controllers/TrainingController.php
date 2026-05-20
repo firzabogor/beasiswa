@@ -5,78 +5,165 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\TrainingProgram;
 use App\Models\TrainingRegistration;
+use App\Models\RegistrationDocument;
 use Illuminate\Support\Facades\Auth;
 
 class TrainingController extends Controller
 {
-    public function index()
+    /**
+     * Daftar semua program pelatihan yang tersedia.
+     */
+    public function index(Request $request)
     {
-        // Mock data if DB is empty for demonstration
-        $programs = TrainingProgram::all();
-        
-        if($programs->isEmpty()) {
-            $programs = collect([
-                (object)[
-                    'id' => 1,
-                    'title' => 'Diklatpim Tingkat IV',
-                    'description' => 'Pendidikan dan Pelatihan Kepemimpinan Tingkat IV untuk membentuk kompetensi kepemimpinan operasional.',
-                    'start_date' => '2024-03-01 08:00:00',
-                    'end_date' => '2024-06-01 16:00:00',
-                    'location' => 'Kampus BPSDMP Jakarta',
-                    'quota' => 30,
-                    'status' => 'open'
-                ],
-                (object)[
-                    'id' => 2,
-                    'title' => 'Workshop IT Security',
-                    'description' => 'Pelatihan keamanan informasi untuk staf IT.',
-                    'start_date' => '2024-04-10 09:00:00',
-                    'end_date' => '2024-04-12 15:00:00',
-                    'location' => 'Online (Zoom)',
-                    'quota' => 50,
-                    'status' => 'open'
-                ]
-            ]);
-        }
+        $kategori = $request->input('kategori', 'pelatihan');
+        $search   = $request->input('search');
+        $year     = $request->input('year');
 
-        return view('training.index', compact('programs'));
+        $programs = TrainingProgram::withCount('requirements')->where('kategori', $kategori)
+            ->when($search, function ($query, $search) {
+                return $query->where('title', 'like', "%{$search}%");
+            })
+            ->when($year, function ($query, $year) {
+                return $query->whereYear('start_date', $year);
+            })
+            ->orderBy('start_date')
+            ->get();
+
+        // Get all unique years for the filter
+        $years = TrainingProgram::selectRaw('YEAR(start_date) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        return view('training.index', compact('programs', 'kategori', 'search', 'year', 'years'));
     }
 
+    /**
+     * Detail satu program pelatihan.
+     */
     public function show($id)
     {
-        // Mock finding data
-        $program = TrainingProgram::find($id);
-        
-        if(!$program) {
-             // Mock data fallback
-             if($id == 1) {
-                $program = (object)[
-                    'id' => 1,
-                    'title' => 'Diklatpim Tingkat IV',
-                    'description' => 'Pendidikan dan Pelatihan Kepemimpinan Tingkat IV untuk membentuk kompetensi kepemimpinan operasional.',
-                    'start_date' => '2024-03-01 08:00:00',
-                    'end_date' => '2024-06-01 16:00:00',
-                    'location' => 'Kampus BPSDMP Jakarta',
-                    'quota' => 30,
-                    'status' => 'open'
-                ];
-             } else {
-                 abort(404);
-             }
+        $program = TrainingProgram::with('topics')->findOrFail($id);
+
+        // Cek apakah user sudah mendaftar program ini
+        $alreadyRegistered = false;
+        if (Auth::check()) {
+            $alreadyRegistered = TrainingRegistration::where('user_id', Auth::id())
+                ->where('training_program_id', $id)
+                ->exists();
         }
 
-        return view('training.show', compact('program'));
+        // Hitung statistik program
+        $registrants = $program->registrations()->count();
+        $endorsements = $program->registrations()->whereNotNull('invitation_letter_path')->count();
+        $finalPassed = $program->registrations()->where('selection_final_result', 'passed')->count();
+
+        return view('training.show', compact('program', 'alreadyRegistered', 'registrants', 'endorsements', 'finalPassed'));
     }
 
-    public function register($id)
+    /**
+     * Tampilkan form pendaftaran (dengan input syarat berkas).
+     */
+    public function showRegisterForm($id)
     {
-        // Logic to save registration
-        // For now, redirect with success message
-        return redirect('/riwayat-diklat')->with('success', 'Berhasil mendaftar diklat!');
+        $program = TrainingProgram::with(['requirements', 'topics'])->findOrFail($id);
+
+        if ($program->status !== 'open') {
+            return redirect('/diklat/' . $id)->with('error', 'Program pendaftaran sudah ditutup.');
+        }
+
+        // Cek apakah user sudah mendaftar
+        $alreadyRegistered = TrainingRegistration::where('user_id', Auth::id())
+            ->where('training_program_id', $id)
+            ->exists();
+
+        if ($alreadyRegistered) {
+            return redirect('/diklat/' . $id)->with('error', 'Anda sudah terdaftar di program ini.');
+        }
+
+        // Jika tidak ada syarat berkas khusus, langsung saja daftar?
+        // User minta form upload, jadi pendaftaran dialihkan kesini.
+        return view('training.register_form', compact('program'));
     }
 
+    /**
+     * Daftarkan user ke program pelatihan dengan mengunggah berkas.
+     */
+    public function register(Request $request, $id)
+    {
+        $program = TrainingProgram::with(['requirements', 'topics'])->findOrFail($id);
+
+        // Validasi dasar
+        if ($program->status !== 'open') {
+            return back()->with('error', 'Program ini sudah ditutup.');
+        }
+
+        if (!$program->hasQuota()) {
+            return back()->with('error', 'Maaf, kuota program ini sudah penuh.');
+        }
+
+        $alreadyRegistered = TrainingRegistration::where('user_id', Auth::id())
+            ->where('training_program_id', $id)
+            ->exists();
+
+        if ($alreadyRegistered) {
+            return back()->with('error', 'Anda sudah mendaftarkan diri ke program ini.');
+        }
+
+        // Validasi berkas berdasarkan requirements
+        $rules = [];
+        $messages = [];
+        foreach ($program->requirements as $req) {
+            $key = 'req_' . $req->id;
+            $rules[$key] = ($req->is_required ? 'required|' : 'nullable|') . 'file|mimes:pdf,jpg,jpeg,png|max:5120';
+            $messages[$key . '.required'] = 'Berkas ' . $req->name . ' wajib diunggah.';
+            $messages[$key . '.mimes']    = 'Format berkas ' . $req->name . ' harus PDF, JPG, atau PNG.';
+        }
+
+        if ($program->topics->count() > 0) {
+            $rules['program_topic_id'] = 'required|exists:program_topics,id';
+            $messages['program_topic_id.required'] = 'Anda harus memilih salah satu topik program.';
+        }
+
+        $request->validate($rules, $messages);
+
+        // Create registration
+        $registration = TrainingRegistration::create([
+            'user_id'             => Auth::id(),
+            'training_program_id' => $id,
+            'program_topic_id'    => $request->program_topic_id,
+            'status'              => 'pending',
+            'registered_at'       => now(),
+            'verification_status' => 'pending',
+        ]);
+
+        // Save documents
+        foreach ($program->requirements as $req) {
+            $key = 'req_' . $req->id;
+            if ($request->hasFile($key)) {
+                $path = $request->file($key)->store('registrations/documents', 'public');
+                RegistrationDocument::create([
+                    'training_registration_id' => $registration->id,
+                    'program_requirement_id'   => $req->id,
+                    'document_path'            => $path,
+                ]);
+            }
+        }
+
+        return redirect('/dashboard')
+            ->with('success', 'Pendaftaran program "' . $program->title . '" berhasil dikirim! Silakan tunggu verifikasi admin.');
+    }
+
+    /**
+     * Riwayat pendaftaran diklat milik user yang sedang login.
+     */
     public function history()
     {
-        return view('training.history');
+        $registrations = TrainingRegistration::with('trainingProgram')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return view('training.history', compact('registrations'));
     }
 }
