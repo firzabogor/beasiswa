@@ -6,7 +6,7 @@
 @section('content')
 
 <div class="page-header">
-    <h1>🎓 Monitoring Program Pendidikan</h1>
+    <h1>🎓 Monitoring Program Beasiswa (Internal & External)</h1>
     <p>Pantau perkembangan, laporan semester, dan berkas akhir para penerima beasiswa.</p>
 </div>
 
@@ -19,7 +19,7 @@
     @if($registrations->isEmpty())
         <div class="empty-state">
             <div class="icon">🎓</div>
-            <p>Belum ada pendaftar di kategori program pendidikan.</p>
+            <p>Belum ada pendaftar di kategori program beasiswa.</p>
         </div>
     @else
         <div class="table-wrapper">

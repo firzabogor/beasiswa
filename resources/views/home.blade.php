@@ -25,7 +25,7 @@
 
     {{-- Hero --}}
     <section class="hero">
-        <h1>Sistem Pelatihan Pegawai</h1>
+        <h1>Sistem Diklat Pegawai</h1>
         <p>Platform terpadu untuk pendaftaran dan manajemen kompetensi pegawai BPSDMP</p>
         
         {{-- Search Bar --}}
@@ -49,13 +49,14 @@
         {{-- Tab Kategori --}}
         <div class="program-tabs">
             <button class="tab-btn {{ $kategori === 'pelatihan' ? 'active' : '' }}" onclick="filterProgram('pelatihan', this)">Program Pelatihan</button>
-            <button class="tab-btn {{ $kategori === 'pendidikan' ? 'active' : '' }}" onclick="filterProgram('pendidikan', this)">Program Pendidikan</button>
+            <button class="tab-btn {{ $kategori === 'pendidikan' ? 'active' : '' }}" onclick="filterProgram('pendidikan', this)">Program Beasiswa Pendidikan Internal</button>
+            <button class="tab-btn {{ $kategori === 'beasiswa_external' ? 'active' : '' }}" onclick="filterProgram('beasiswa_external', this)">Program Beasiswa Pendidikan External</button>
         </div>
 
         <div class="program-grid">
             @forelse($programs as $program)
-                <a href="{{ url('/diklat/' . $program->id) }}" class="program-card-link" style="text-decoration: none; color: inherit;">
-                    <div class="program-card" data-kategori="{{ $program->kategori }}" style="{{ $program->kategori === $kategori ? '' : 'display:none;' }}">
+                <a href="{{ url('/diklat/' . $program->id) }}" class="program-card-link" data-kategori="{{ $program->kategori }}" style="text-decoration: none; color: inherit; {{ $program->kategori === $kategori ? '' : 'display:none;' }}">
+                    <div class="program-card" style="height: 100%;">
                         <div class="program-image" style="background-image: url('{{ $program->image_path ? asset('storage/' . $program->image_path) : asset('img/default-program.jpg') }}'); background-size: cover; background-position: center; height: 180px; width: 100%; border-radius: 8px 8px 0 0;">
                             @if(!$program->image_path)
                                 <div class="placeholder-img" style="height: 100%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #777;">
@@ -100,8 +101,8 @@
             elBtn.classList.add('active');
 
             // Tampilkan/sembunyikan card
-            document.querySelectorAll('.program-card').forEach(card => {
-                card.style.display = card.dataset.kategori === kategori ? '' : 'none';
+            document.querySelectorAll('.program-card-link').forEach(link => {
+                link.style.display = link.dataset.kategori === kategori ? '' : 'none';
             });
 
             // Update tombol CTA — arahkan ke halaman program sesuai kategori

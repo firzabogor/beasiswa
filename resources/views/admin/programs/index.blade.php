@@ -59,7 +59,14 @@
                     <tr>
                         <td>{{ $programs->firstItem() + $i }}</td>
                         <td style="font-weight:600;max-width:220px;">{{ $p->title }}</td>
-                        <td><span class="badge badge-{{ $p->kategori === 'pelatihan' ? 'open' : 'applied' }}">{{ ucfirst($p->kategori) }}</span></td>
+                        <td>
+                            @php
+                                $katLabel = 'Pelatihan';
+                                if($p->kategori === 'pendidikan') $katLabel = 'Beasiswa Internal';
+                                if($p->kategori === 'beasiswa_external') $katLabel = 'Beasiswa External';
+                            @endphp
+                            <span class="badge badge-{{ $p->kategori === 'pelatihan' ? 'open' : 'applied' }}">{{ $katLabel }}</span>
+                        </td>
                         <td>{{ $p->start_date->format('d M Y') }}</td>
                         <td>{{ $p->location }}</td>
                         <td>{{ $p->quota }}</td>

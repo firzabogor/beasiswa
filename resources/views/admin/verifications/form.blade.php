@@ -53,7 +53,7 @@
             @endif
             @if($registration->invitation_letter_path)
                 <div class="alert alert-success" style="margin-top:8px;">
-                    ✅ Surat rekomendasi sudah diupload pada {{ $registration->invitation_letter_uploaded_at?->format('d M Y H:i') }}
+                    ✅ {{ $registration->trainingProgram->kategori === 'pendidikan' ? 'Surat Tugas Belajar' : 'Surat Rekomendasi' }} sudah diupload pada {{ $registration->invitation_letter_uploaded_at?->format('d M Y H:i') }}
                 </div>
             @endif
         </div>
@@ -97,7 +97,7 @@
                             style="accent-color:#28a745;width:18px;height:18px;">
                         <div>
                             <div style="font-weight:700;color:#28a745;">✅ Lolos Verifikasi</div>
-                            <div style="font-size:12px;color:#888;">Sertakan surat rekomendasi</div>
+                            <div style="font-size:12px;color:#888;">Sertakan {{ $registration->trainingProgram->kategori === 'pendidikan' ? 'surat tugas belajar' : 'surat rekomendasi' }}</div>
                         </div>
                     </label>
                     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;border:2px solid #ddd;border-radius:8px;flex:1;transition:all 0.2s;" id="lbl-rejected">
@@ -114,14 +114,14 @@
 
             <div class="form-group" id="letter-section" style="{{ old('verification_status') === 'rejected' ? 'display:none' : '' }}">
                 <label class="form-label" for="invitation_letter">
-                    📎 Upload Surat Rekomendasi (PDF) <span style="color:#dc3545;">*</span>
+                    📎 Upload {{ $registration->trainingProgram->kategori === 'pendidikan' ? 'Surat Tugas Belajar' : 'Surat Rekomendasi' }} (PDF) <span style="color:#dc3545;">*</span>
                 </label>
                 <input type="file" id="invitation_letter" name="invitation_letter" class="form-control" accept=".pdf"
                     @if(!$registration->invitation_letter_path) required @endif>
                 <div style="font-size:12px;color:#888;margin-top:6px;">Format: PDF | Maks. 10MB</div>
                 @if($registration->invitation_letter_path)
                     <div class="alert alert-info" style="margin-top:8px;">
-                        ℹ️ Surat rekomendasi sudah ada. Upload baru untuk mengganti.
+                        ℹ️ {{ $registration->trainingProgram->kategori === 'pendidikan' ? 'Surat Tugas Belajar' : 'Surat Rekomendasi' }} sudah ada. Upload baru untuk mengganti.
                     </div>
                 @endif
             </div>
@@ -137,7 +137,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">📨 Kirim Rekomendasi</button>
+                <button type="submit" class="btn btn-primary">📨 Kirim {{ $registration->trainingProgram->kategori === 'pendidikan' ? 'Surat Tugas Belajar' : 'Rekomendasi' }}</button>
                 <a href="{{ url('/admin/verifikasi') }}" class="btn btn-secondary">Batal</a>
             </div>
         </form>

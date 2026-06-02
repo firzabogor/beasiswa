@@ -118,7 +118,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'title'       => 'required|string|max:255',
-            'kategori'    => 'required|in:pelatihan,pendidikan',
+            'kategori'    => 'required|in:pelatihan,pendidikan,beasiswa_external',
             'description' => 'required|string',
             'start_date'  => 'required|date',
             'end_date'    => 'required|date|after_or_equal:start_date',
@@ -223,7 +223,7 @@ class AdminController extends Controller
 
         $request->validate([
             'title'       => 'required|string|max:255',
-            'kategori'    => 'required|in:pelatihan,pendidikan',
+            'kategori'    => 'required|in:pelatihan,pendidikan,beasiswa_external',
             'description' => 'required|string',
             'start_date'  => 'required|date',
             'end_date'    => 'required|date|after_or_equal:start_date',
@@ -426,7 +426,7 @@ class AdminController extends Controller
             'invitation_letter'   => 'nullable|file|mimes:pdf|max:10240',
         ], [
             'verification_status.required' => 'Status verifikasi wajib dipilih.',
-            'invitation_letter.mimes'      => 'Surat rekomendasi harus berformat PDF.',
+            'invitation_letter.mimes'      => 'Surat rekomendasi / tugas belajar harus berformat PDF.',
             'invitation_letter.max'        => 'Ukuran file maksimal 10MB.',
         ]);
 
@@ -445,7 +445,7 @@ class AdminController extends Controller
         $registration->update($data);
 
         $msg = $request->verification_status === 'verified'
-            ? 'Pendaftaran berhasil diverifikasi dan surat rekomendasi telah dikirim.'
+            ? 'Pendaftaran berhasil diverifikasi dan surat rekomendasi / tugas belajar telah dikirim.'
             : 'Pendaftaran telah ditolak.';
 
         return redirect('/admin/verifikasi')->with('success', $msg);
@@ -690,7 +690,7 @@ class AdminController extends Controller
     {
         $registrations = TrainingRegistration::with(['user', 'trainingProgram', 'educationActivities'])
             ->whereHas('trainingProgram', function($q) {
-                $q->where('kategori', 'pendidikan');
+                $q->whereIn('kategori', ['pendidikan', 'beasiswa_external']);
             })
             ->latest()
             ->paginate(15);
@@ -704,7 +704,7 @@ class AdminController extends Controller
 
         $registrations = TrainingRegistration::with(['user', 'trainingProgram', 'educationActivities'])
             ->whereHas('trainingProgram', function($q) {
-                $q->where('kategori', 'pendidikan');
+                $q->whereIn('kategori', ['pendidikan', 'beasiswa_external']);
             })
             ->latest()
             ->get();
@@ -759,11 +759,12 @@ class AdminController extends Controller
      */
     public function monitoringPelatihan()
     {
-        $registrations = TrainingRegistration::with(['user', 'trainingProgram'])
+        $registrations = TrainingRegistration::with(['user', 'trainingProgram', 'programTopic'])
             ->whereHas('trainingProgram', function($q) {
                 $q->where('kategori', 'pelatihan');
             })
-            ->whereNotNull('final_report_path')
+            ->where('verification_status', 'verified')
+            ->whereNotNull('invitation_letter_path')
             ->latest()
             ->paginate(15);
 
@@ -885,5 +886,60 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Berkas LOA berhasil di-reset. Peserta kini dapat mengunggah ulang LOA mereka.');
+    }
+
+    /**
+     * Reset Hasil Seleksi Akhir & LOA Pelatihan.
+     * Menghapus: selection_final_result, loa_path, selection_final_doc_path
+     * Sehingga peserta wajib mengisi kembali dari awal tahap seleksi akhir.
+     */
+    public function resetSelectionResult($id)
+    {
+        $registration = TrainingRegistration::findOrFail($id);
+
+        $registration->update([
+            'selection_final_result'   => null,
+            'loa_path'                 => null,
+            'selection_final_doc_path' => null,
+        ]);
+
+        return back()->with('success', 'Hasil Seleksi & LOA berhasil di-reset. Peserta kini diwajibkan mengisi kembali dokumen seleksi akhir mereka.');
+    }
+
+    /**
+     * Tampilkan Halaman Pengaturan Aplikasi
+     */
+    public function settings()
+    {
+        return view('admin.settings.index');
+    }
+
+    /**
+     * Simpan Pembaruan Pengaturan
+     */
+    public function updateSettings(Request $request)
+    {
+        $request->validate([
+            'ks_popup_title'    => 'required|string|max:255',
+            'ks_popup_subtitle' => 'required|string|max:255',
+            'ks_popup_desc'     => 'required|string',
+            'ks_popup_info'     => 'required|string',
+        ]);
+
+        $settingsToUpdate = [
+            'ks_popup_title',
+            'ks_popup_subtitle',
+            'ks_popup_desc',
+            'ks_popup_info'
+        ];
+
+        foreach ($settingsToUpdate as $key) {
+            \App\Models\Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $request->input($key)]
+            );
+        }
+
+        return back()->with('success', 'Pengaturan berhasil diperbarui.');
     }
 }

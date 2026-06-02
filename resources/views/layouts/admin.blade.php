@@ -217,10 +217,13 @@
             <span class="icon">📄</span> Dokumen Seleksi
         </a>
         <a href="{{ url('/admin/monitoring-pendidikan') }}" class="{{ request()->is('admin/monitoring-pendidikan*') ? 'active' : '' }}">
-            <span class="icon">🎓</span> Monitoring Pendidikan
+            <span class="icon">🎓</span> Monitoring Beasiswa
         </a>
         <a href="{{ url('/admin/monitoring-pelatihan') }}" class="{{ request()->is('admin/monitoring-pelatihan*') ? 'active' : '' }}">
             <span class="icon">📋</span> Monitoring Pelatihan
+        </a>
+        <a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}">
+            <span class="icon">⚙️</span> Pengaturan
         </a>
     </nav>
 

@@ -19,7 +19,7 @@ class ApplicationController extends Controller
     {
         $year = $request->input('year');
 
-        $registrations = TrainingRegistration::with(['trainingProgram', 'programTopic', 'companyApplication.selectionDocument'])
+        $registrations = TrainingRegistration::with(['trainingProgram', 'programTopic', 'companyApplication.selectionDocument', 'requirementDocuments.requirement'])
             ->where('user_id', Auth::id())
             ->when($year, function ($query, $year) {
                 return $query->whereHas('trainingProgram', function ($q) use ($year) {
@@ -433,6 +433,8 @@ class ApplicationController extends Controller
             'final_report_path' => $path,
         ]);
 
-        return redirect('/dashboard')->with('success', 'Laporan akhir pelatihan berhasil diunggah. Seluruh tahapan pelatihan telah selesai.');
+        return redirect('/dashboard')
+            ->with('success', 'Laporan akhir pelatihan berhasil diunggah. Seluruh tahapan pelatihan telah selesai.')
+            ->with('show_knowledge_sharing_popup', true);
     }
 }

@@ -24,7 +24,8 @@
                 <select id="kategori" name="kategori" class="form-control" required>
                     <option value="">-- Pilih Kategori --</option>
                     <option value="pelatihan"  {{ old('kategori') === 'pelatihan'  ? 'selected' : '' }}>Pelatihan</option>
-                    <option value="pendidikan" {{ old('kategori') === 'pendidikan' ? 'selected' : '' }}>Pendidikan</option>
+                    <option value="pendidikan" {{ old('kategori') === 'pendidikan' ? 'selected' : '' }}>Beasiswa Pendidikan Internal</option>
+                    <option value="beasiswa_external" {{ old('kategori') === 'beasiswa_external' ? 'selected' : '' }}>Beasiswa Pendidikan External</option>
                 </select>
             </div>
         </div>
@@ -203,7 +204,7 @@
             if(cat === 'pelatihan') {
                 t1.style.display = 'block';
                 t2.style.display = 'none';
-            } else if(cat === 'pendidikan') {
+            } else if(cat === 'pendidikan' || cat === 'beasiswa_external') {
                 t1.style.display = 'block';
                 t2.style.display = 'block';
             } else {

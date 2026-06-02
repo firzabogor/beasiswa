@@ -48,7 +48,11 @@
         </a>
         <a href="{{ url('/diklat') }}?kategori=pendidikan&search={{ $search }}&year={{ $year }}"
            class="tab-btn {{ $kategori === 'pendidikan' ? 'active' : '' }}">
-            Program Pendidikan
+            Program Beasiswa Pendidikan Internal
+        </a>
+        <a href="{{ url('/diklat') }}?kategori=beasiswa_external&search={{ $search }}&year={{ $year }}"
+           class="tab-btn {{ $kategori === 'beasiswa_external' ? 'active' : '' }}">
+            Program Beasiswa Pendidikan External
         </a>
     </div>
 
@@ -57,14 +61,19 @@
         @forelse($programs as $program)
             <a href="{{ url('/diklat/' . $program->id) }}" class="program-card-link" style="text-decoration: none; color: inherit; transition: transform 0.2s;">
                 <div class="program-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #eee; height: 100%;">
-                    <div class="program-image" style="background-image: url('{{ $program->image_path ? asset('storage/' . $program->image_path) : asset('img/default-program.jpg') }}'); background-size: cover; background-position: center; height: 180px; width: 100%;">
+                    <div class="program-image" style="background-image: url('{{ $program->image_path ? asset('storage/' . $program->image_path) : asset('img/default-program.jpg') }}'); background-size: cover; background-position: center; height: 180px; width: 100%; position: relative;">
                         @if(!$program->image_path)
                             <div class="placeholder-img" style="height: 100%; background: #edf2f7; display: flex; align-items: center; justify-content: center; color: #a0aec0;">
                                 <span>No Poster</span>
                             </div>
                         @endif
-                        <div style="position: absolute; top: 10px; right: 10px; background: {{ $program->status == 'open' ? '#38a169' : '#e53e3e' }}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
-                            {{ $program->status == 'open' ? 'Buka' : 'Tutup' }}
+                        @php
+                            $isExpired = $program->isRegistrationExpired();
+                            $badgeBg   = ($program->status == 'open' && !$isExpired) ? '#38a169' : '#e53e3e';
+                            $badgeText = ($program->status == 'open' && !$isExpired) ? 'Buka' : 'Tutup';
+                        @endphp
+                        <div style="position: absolute; top: 10px; right: 10px; background: {{ $badgeBg }}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                            {{ $badgeText }}
                         </div>
                     </div>
                     <div class="program-info" style="padding: 20px; text-align: left;">
@@ -73,7 +82,15 @@
                         </span>
                         <h3 style="margin: 0; font-size: 1.1rem; color: #1a3a6c; line-height: 1.3; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ $program->title }}</h3>
                         
-                        <div style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #718096; border-top: 1px solid #f0f2f5; padding-top: 15px;">
+                        <div style="margin-top: 10px; font-size: 11px; color: #e53e3e; font-weight: 600;">
+                            @if($isExpired)
+                                🔒 Ditutup sejak {{ $program->end_date->format('d M Y') }}
+                            @elseif($program->end_date)
+                                ⏳ Tutup: {{ $program->end_date->format('d M Y') }}
+                            @endif
+                        </div>
+
+                        <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #718096; border-top: 1px solid #f0f2f5; padding-top: 12px;">
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 📅 {{ $program->start_date->format('Y') }}
                             </div>

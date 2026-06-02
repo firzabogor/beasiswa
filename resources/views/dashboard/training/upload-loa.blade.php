@@ -47,7 +47,7 @@
             <p style="font-size: 13px; color: #1a3a6c; margin-top: 0;">Selamat Anda lolos seleksi akhir! Silakan unggah dokumen wajib berikut:</p>
             
             <div style="margin-bottom: 0;">
-                <label style="font-weight: 700; color: #1a3a6c;">Surat Diterima (LOA) *</label>
+                <label style="font-weight: 700; color: #1a3a6c;">File LOA (Letter of Acceptance) *</label>
                 <input type="file" name="loa_file" id="loa_file_input" class="form-control" accept=".pdf" style="margin-top: 5px;">
                 <small style="color: #888;">Format: PDF (Maks. 5MB)</small>
             </div>

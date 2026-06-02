@@ -119,4 +119,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/monitoring-pelatihan/export', [AdminController::class, 'exportMonitoringPelatihan']);
     Route::get('/monitoring-pelatihan/{id}/download', [AdminController::class, 'downloadTrainingReport']);
     Route::post('/monitoring-pelatihan/{id}/reset', [AdminController::class, 'resetTrainingReport']);
+    Route::post('/monitoring-pelatihan/{id}/reset-seleksi', [AdminController::class, 'resetSelectionResult']);
+
+    // Pengaturan Aplikasi
+    Route::get('/settings', [AdminController::class, 'settings']);
+    Route::post('/settings', [AdminController::class, 'updateSettings']);
 });

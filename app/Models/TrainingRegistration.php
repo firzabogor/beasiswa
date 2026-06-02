@@ -12,6 +12,7 @@ class TrainingRegistration extends Model
     protected $fillable = [
         'user_id',
         'training_program_id',
+        'program_topic_id',
         'status',
         'registered_at',
         'verification_status',

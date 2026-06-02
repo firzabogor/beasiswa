@@ -141,7 +141,7 @@
 <header>
     <div class="header-left">
         <h1>Simdiklat - BPSDMP</h1>
-        <p>Sistem Pelatihan Pegawai</p>
+        <p>Sistem Diklat Pegawai</p>
     </div>
     <div class="header-right" style="display:flex;align-items:center;">
         @auth

@@ -44,20 +44,31 @@
                 <p style="margin: 0 0 16px 0; font-size: 13px; color: #4a5568;">Pilih salah satu topik di bawah ini untuk melihat jadwal pendaftaran dan pelaksanaannya.</p>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     @foreach($program->topics as $topic)
+                    @php
+                        $isExpired = $topic->end_date && $topic->end_date->startOfDay() < now()->startOfDay();
+                    @endphp
                     <label id="topic-label-{{ $topic->id }}"
-                        style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 12px 16px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; transition: all 0.2s; user-select: none;"
+                        style="display: flex; align-items: flex-start; gap: 12px; cursor: {{ $isExpired ? 'not-allowed' : 'pointer' }}; padding: 12px 16px; background: {{ $isExpired ? '#f7fafc' : 'white' }}; border: 2px solid #e2e8f0; border-radius: 8px; transition: all 0.2s; user-select: none; opacity: {{ $isExpired ? '0.65' : '1' }};"
+                        @if(!$isExpired)
                         onmouseover="this.style.borderColor='#4a90d9'"
                         onmouseout="updateTopicHover({{ $topic->id }})"
-                        onclick="selectTopic({{ $topic->id }}, this)">
+                        onclick="selectTopic({{ $topic->id }}, this)"
+                        @endif>
                         <input type="radio" name="topic_id_display" value="{{ $topic->id }}"
+                            {{ $isExpired ? 'disabled' : '' }}
                             data-start="{{ $topic->start_date ? $topic->start_date->format('d M Y') : '' }}"
                             data-end="{{ $topic->end_date ? $topic->end_date->format('d M Y') : '' }}"
                             data-exec-start="{{ $topic->execution_start_date ? $topic->execution_start_date->format('d M Y') : '' }}"
                             data-exec-end="{{ $topic->execution_end_date ? $topic->execution_end_date->format('d M Y') : '' }}"
                             style="accent-color: #1a3a6c; width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0;"
                             onchange="onTopicChange(this)">
-                        <div>
-                            <div style="font-weight: 600; color: #2d3748; font-size: 14px;">{{ $topic->name }}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #2d3748; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                                {{ $topic->name }}
+                                @if($isExpired)
+                                <span style="font-size: 10px; font-weight: 700; background: #fed7d7; color: #c53030; padding: 2px 6px; border-radius: 4px;">DITUTUP</span>
+                                @endif
+                            </div>
                             @if($topic->start_date && $topic->end_date)
                             <div style="font-size: 12px; color: #718096; margin-top: 3px;">
                                 📅 Pendaftaran: {{ $topic->start_date->format('d M Y') }} – {{ $topic->end_date->format('d M Y') }}
@@ -136,6 +147,11 @@
                             <span>✅ Anda sudah terdaftar di program ini.</span>
                             <a href="{{ url('/riwayat-diklat') }}" style="font-weight: bold; color: #285e61;">Lihat Status &rarr;</a>
                         </div>
+                    @elseif($program->isRegistrationExpired())
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <button class="btn btn-secondary" disabled style="padding: 15px 40px; border-radius: 8px; opacity:0.7;">🔒 Pendaftaran Ditutup</button>
+                            <span style="font-size:13px;color:#e53e3e;">⏰ Masa pendaftaran telah berakhir pada <strong>{{ $program->end_date->format('d M Y') }}</strong>.</span>
+                        </div>
                     @elseif($program->status == 'open')
                         @if($program->topics->count() > 0)
                         <a id="btn-daftar"
@@ -158,9 +174,9 @@
                     @endif
                 </div>
 
-                @if($program->status == 'open' && !$alreadyRegistered)
+                @if($program->isRegistrationOpen() && !$alreadyRegistered)
                     <div style="color: #718096; font-size: 14px;">
-                        Pendaftaran masih dibuka hingga kuota penuh.
+                        Pendaftaran ditutup pada: <strong style="color:#c05621;">{{ $program->end_date->format('d M Y') }}</strong>
                     </div>
                 @endif
             </div>

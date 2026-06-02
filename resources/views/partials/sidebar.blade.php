@@ -34,7 +34,7 @@
                 </a>
                 <a href="{{ url('/admin/monitoring-pendidikan') }}"
                    class="menu-item {{ Request::is('admin/monitoring-pendidikan*') ? 'active' : '' }}">
-                    🎓 Monitoring Pendidikan
+                    🎓 Monitoring Beasiswa
                 </a>
                 <a href="{{ url('/admin/documents') }}"
                    class="menu-item {{ Request::is('admin/documents*') ? 'active' : '' }}">

@@ -68,8 +68,11 @@ class TrainingController extends Controller
     {
         $program = TrainingProgram::with(['requirements', 'topics'])->findOrFail($id);
 
-        if ($program->status !== 'open') {
-            return redirect('/diklat/' . $id)->with('error', 'Program pendaftaran sudah ditutup.');
+        if (!$program->isRegistrationOpen()) {
+            $msg = $program->isRegistrationExpired()
+                ? 'Maaf, masa pendaftaran program ini telah berakhir pada ' . $program->end_date->format('d M Y') . '.'
+                : 'Program pendaftaran sudah ditutup.';
+            return redirect('/diklat/' . $id)->with('error', $msg);
         }
 
         // Cek apakah user sudah mendaftar
@@ -94,8 +97,11 @@ class TrainingController extends Controller
         $program = TrainingProgram::with(['requirements', 'topics'])->findOrFail($id);
 
         // Validasi dasar
-        if ($program->status !== 'open') {
-            return back()->with('error', 'Program ini sudah ditutup.');
+        if (!$program->isRegistrationOpen()) {
+            $msg = $program->isRegistrationExpired()
+                ? 'Maaf, masa pendaftaran program ini telah berakhir pada ' . $program->end_date->format('d M Y') . '.'
+                : 'Program ini sudah ditutup.';
+            return back()->with('error', $msg);
         }
 
         if (!$program->hasQuota()) {
@@ -126,6 +132,14 @@ class TrainingController extends Controller
         }
 
         $request->validate($rules, $messages);
+
+        // Validasi kadaluarsa topik
+        if ($request->filled('program_topic_id')) {
+            $topic = $program->topics->firstWhere('id', $request->program_topic_id);
+            if ($topic && $topic->end_date && $topic->end_date->startOfDay() < now()->startOfDay()) {
+                return back()->with('error', 'Maaf, masa pendaftaran untuk topik "' . $topic->name . '" telah berakhir.');
+            }
+        }
 
         // Create registration
         $registration = TrainingRegistration::create([

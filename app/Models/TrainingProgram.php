@@ -68,4 +68,20 @@ class TrainingProgram extends Model
     {
         return $this->activeRegistrationsCount() < $this->quota;
     }
+
+    /**
+     * Cek apakah masa pendaftaran sudah berakhir (end_date sudah lewat).
+     */
+    public function isRegistrationExpired(): bool
+    {
+        return $this->end_date && now()->greaterThan($this->end_date->endOfDay());
+    }
+
+    /**
+     * Cek apakah pendaftaran masih bisa dilakukan (status open + belum expired).
+     */
+    public function isRegistrationOpen(): bool
+    {
+        return $this->status === 'open' && !$this->isRegistrationExpired();
+    }
 }

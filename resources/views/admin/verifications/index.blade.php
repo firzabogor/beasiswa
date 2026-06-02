@@ -46,7 +46,7 @@
                         <th>Tanggal Daftar</th>
                         <th>Status Verifikasi</th>
                         <th>Berkas</th>
-                        <th>Surat Rekomendasi</th>
+                        <th>Surat Rekomendasi / Tugas Belajar</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
