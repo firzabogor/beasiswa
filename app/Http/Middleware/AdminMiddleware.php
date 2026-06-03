@@ -11,7 +11,9 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || Auth::user()->email !== 'admin@bpsdmp.go.id') {
+        $allowedEmails = ['admin@bpsdmp.go.id', 'admin.internal@bpsdmp.go.id'];
+
+        if (!Auth::check() || !in_array(Auth::user()->email, $allowedEmails)) {
             abort(403, 'Akses ditolak. Panel ini hanya dapat diakses oleh akun resmi Administrator BPSDMP.');
         }
         return $next($request);

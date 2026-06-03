@@ -22,12 +22,18 @@ class AdminController extends Controller
     // ================================================================
     public function dashboard(Request $request)
     {
+        $isInternalAdmin = auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id';
+
         $data = [
-            'total_programs'      => TrainingProgram::count(),
+            'total_programs'      => TrainingProgram::when($isInternalAdmin, fn($q) => $q->where('kategori', 'pendidikan'))->count(),
             'total_users'         => User::where('role', 'user')->count(),
-            'pending_verif'       => TrainingRegistration::where('verification_status', 'pending')->count(),
-            'total_registrations' => TrainingRegistration::count(),
-            'recent_registrations'=> TrainingRegistration::with(['user', 'trainingProgram'])->latest()->take(5)->get(),
+            'pending_verif'       => TrainingRegistration::where('verification_status', 'pending')
+                                        ->when($isInternalAdmin, fn($q) => $q->whereHas('trainingProgram', fn($sq) => $sq->where('kategori', 'pendidikan')))
+                                        ->count(),
+            'total_registrations' => TrainingRegistration::when($isInternalAdmin, fn($q) => $q->whereHas('trainingProgram', fn($sq) => $sq->where('kategori', 'pendidikan')))->count(),
+            'recent_registrations'=> TrainingRegistration::with(['user', 'trainingProgram'])
+                                        ->when($isInternalAdmin, fn($q) => $q->whereHas('trainingProgram', fn($sq) => $sq->where('kategori', 'pendidikan')))
+                                        ->latest()->take(5)->get(),
         ];
 
         // Filter untuk grafik
@@ -44,6 +50,10 @@ class AdminController extends Controller
                 $query->where('verification_status', 'rejected');
             }
         ]);
+
+        if ($isInternalAdmin) {
+            $chartQuery->where('kategori', 'pendidikan');
+        }
 
         if ($chartYear) {
             $chartQuery->whereYear('start_date', $chartYear);
@@ -86,8 +96,13 @@ class AdminController extends Controller
     {
         $search = $request->input('search');
         $year   = $request->input('year');
+        $isInternalAdmin = auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id';
 
         $query = TrainingProgram::withCount('requirements');
+
+        if ($isInternalAdmin) {
+            $query->where('kategori', 'pendidikan');
+        }
 
         if ($search) {
             $query->where('title', 'like', "%{$search}%");
@@ -116,6 +131,10 @@ class AdminController extends Controller
 
     public function storeProgram(Request $request)
     {
+        if (auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id' && $request->kategori !== 'pendidikan') {
+            abort(403, 'Admin internal hanya dapat membuat program kategori pendidikan.');
+        }
+
         $request->validate([
             'title'       => 'required|string|max:255',
             'kategori'    => 'required|in:pelatihan,pendidikan,beasiswa_external',
@@ -400,10 +419,12 @@ class AdminController extends Controller
     public function verifications(Request $request)
     {
         $status = $request->input('status', 'pending');
+        $isInternalAdmin = auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id';
 
         $registrations = TrainingRegistration::with(['user', 'trainingProgram'])
             ->withCount('requirementDocuments')
             ->where('verification_status', $status)
+            ->when($isInternalAdmin, fn($q) => $q->whereHas('trainingProgram', fn($sq) => $sq->where('kategori', 'pendidikan')))
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -455,6 +476,7 @@ class AdminController extends Controller
     {
         $status = $request->input('status', 'all');
         $filename = 'Data_Pelamar_' . date('Ymd_His') . '.csv';
+        $isInternalAdmin = auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id';
 
         $query = TrainingRegistration::with([
             'user', 
@@ -465,6 +487,10 @@ class AdminController extends Controller
 
         if ($status && $status !== 'all') {
             $query->where('verification_status', $status);
+        }
+
+        if ($isInternalAdmin) {
+            $query->whereHas('trainingProgram', fn($q) => $q->where('kategori', 'pendidikan'));
         }
 
         $registrations = $query->orderBy('created_at', 'desc')->get();
@@ -537,6 +563,8 @@ class AdminController extends Controller
     // ================================================================
     public function users(Request $request)
     {
+        if (auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id') abort(403, 'Akses ditolak.');
+
         $search = $request->input('search');
         $users = User::where('role', 'user')
             ->when($search, fn($q) => $q->where('name', 'like', "%$search%")->orWhere('nip', 'like', "%$search%")->orWhere('email', 'like', "%$search%"))
@@ -635,9 +663,16 @@ class AdminController extends Controller
     public function selectionDocuments(Request $request)
     {
         $result = $request->input('result');
+        $isInternalAdmin = auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id';
+
         $docs = SelectionDocument::with(['companyApplication.trainingRegistration.user',
                                           'companyApplication.trainingRegistration.trainingProgram'])
             ->when($result, fn($q) => $q->where('selection_result', $result))
+            ->when($isInternalAdmin, function($q) {
+                $q->whereHas('companyApplication.trainingRegistration.trainingProgram', function($sq) {
+                    $sq->where('kategori', 'pendidikan');
+                });
+            })
             ->latest()
             ->paginate(15);
 
@@ -655,6 +690,8 @@ class AdminController extends Controller
 
     public function consultations()
     {
+        if (auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id') abort(403, 'Akses ditolak.');
+
         $consultations = Consultation::with('user')->latest()->get();
         return view('admin.consultations.index', compact('consultations'));
     }
@@ -688,9 +725,15 @@ class AdminController extends Controller
 
     public function monitoringPendidikan()
     {
+        $isInternalAdmin = auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id';
+
         $registrations = TrainingRegistration::with(['user', 'trainingProgram', 'educationActivities'])
-            ->whereHas('trainingProgram', function($q) {
-                $q->whereIn('kategori', ['pendidikan', 'beasiswa_external']);
+            ->whereHas('trainingProgram', function($q) use ($isInternalAdmin) {
+                if ($isInternalAdmin) {
+                    $q->where('kategori', 'pendidikan');
+                } else {
+                    $q->whereIn('kategori', ['pendidikan', 'beasiswa_external']);
+                }
             })
             ->latest()
             ->paginate(15);
@@ -759,6 +802,8 @@ class AdminController extends Controller
      */
     public function monitoringPelatihan()
     {
+        if (auth()->check() && auth()->user()->email === 'admin.internal@bpsdmp.go.id') abort(403, 'Akses ditolak.');
+
         $registrations = TrainingRegistration::with(['user', 'trainingProgram', 'programTopic'])
             ->whereHas('trainingProgram', function($q) {
                 $q->where('kategori', 'pelatihan');

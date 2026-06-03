@@ -201,30 +201,44 @@
     <div class="sidebar-section">Manajemen</div>
     <nav class="sidebar-nav">
         <a href="{{ url('/admin/programs') }}" class="{{ request()->is('admin/programs*') ? 'active' : '' }}">
-            <span class="icon">📚</span> Program Pelatihan
+            <span class="icon">📚</span> Program
         </a>
         <a href="{{ url('/admin/verifikasi') }}" class="{{ request()->is('admin/verifikasi*') ? 'active' : '' }}">
             <span class="icon">✅</span> Verifikasi Pendaftaran
-            @php $pendingCount = \App\Models\TrainingRegistration::where('verification_status','pending')->count(); @endphp
+            @php 
+                $isInternal = auth()->user()->email === 'admin.internal@bpsdmp.go.id';
+                $pendingQuery = \App\Models\TrainingRegistration::where('verification_status','pending');
+                if ($isInternal) {
+                    $pendingQuery->whereHas('trainingProgram', fn($q) => $q->where('kategori', 'pendidikan'));
+                }
+                $pendingCount = $pendingQuery->count(); 
+            @endphp
             @if($pendingCount > 0)
                 <span class="sidebar-badge">{{ $pendingCount }}</span>
             @endif
         </a>
+        
+        @if(auth()->user()->email !== 'admin.internal@bpsdmp.go.id')
         <a href="{{ url('/admin/users') }}" class="{{ request()->is('admin/users*') ? 'active' : '' }}">
             <span class="icon">👥</span> Kelola Pengguna
         </a>
+        @endif
+
         <a href="{{ url('/admin/documents') }}" class="{{ request()->is('admin/documents*') ? 'active' : '' }}">
             <span class="icon">📄</span> Dokumen Seleksi
         </a>
         <a href="{{ url('/admin/monitoring-pendidikan') }}" class="{{ request()->is('admin/monitoring-pendidikan*') ? 'active' : '' }}">
             <span class="icon">🎓</span> Monitoring Beasiswa
         </a>
+        
+        @if(auth()->user()->email !== 'admin.internal@bpsdmp.go.id')
         <a href="{{ url('/admin/monitoring-pelatihan') }}" class="{{ request()->is('admin/monitoring-pelatihan*') ? 'active' : '' }}">
             <span class="icon">📋</span> Monitoring Pelatihan
         </a>
         <a href="{{ url('/admin/settings') }}" class="{{ request()->is('admin/settings*') ? 'active' : '' }}">
             <span class="icon">⚙️</span> Pengaturan
         </a>
+        @endif
     </nav>
 
     <div class="sidebar-section">Lainnya</div>
@@ -253,10 +267,16 @@
             {{-- Notification Bell (Admin) --}}
             @php
                 $today = \Carbon\Carbon::today();
-                $adminDeadlines = \App\Models\TrainingProgram::where('status', 'open')
+                $isInternal = auth()->user()->email === 'admin.internal@bpsdmp.go.id';
+                $adminDeadlinesQuery = \App\Models\TrainingProgram::where('status', 'open')
                     ->whereDate('end_date', '>=', $today)
-                    ->whereDate('end_date', '<=', $today->copy()->addDays(10))
-                    ->orderBy('end_date')
+                    ->whereDate('end_date', '<=', $today->copy()->addDays(10));
+                
+                if ($isInternal) {
+                    $adminDeadlinesQuery->where('kategori', 'pendidikan');
+                }
+                
+                $adminDeadlines = $adminDeadlinesQuery->orderBy('end_date')
                     ->get()
                     ->map(function($p) use ($today) {
                         $p->days_left = (int) $today->diffInDays($p->end_date, false);

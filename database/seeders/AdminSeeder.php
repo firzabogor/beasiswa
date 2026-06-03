@@ -21,5 +21,17 @@ class AdminSeeder extends Seeder
                 'role'     => 'admin',
             ]
         );
+
+        User::updateOrCreate(
+            ['email' => 'admin.internal@bpsdmp.go.id'],
+            [
+                'name'     => 'Admin Beasiswa Internal',
+                'nip'      => '000000000001',
+                'position' => 'Admin Internal',
+                'email'    => 'admin.internal@bpsdmp.go.id',
+                'password' => Hash::make('AdminInternal123'),
+                'role'     => 'admin',
+            ]
+        );
     }
 }
