@@ -22,7 +22,7 @@
     <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 1000px; margin: 0 auto;">
         {{-- Hero Image / Poster --}}
         @if($program->image_path)
-            <div style="width: 100%; height: 400px; background-image: url('{{ asset('storage/' . $program->image_path) }}'); background-size: cover; background-position: center; position: relative;">
+            <div style="width: 100%; height: 400px; background-image: url('{{ file_url($program->image_path) }}'); background-size: cover; background-position: center; position: relative;">
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 40px 30px 20px;">
                     <h1 style="color: white; margin: 0; font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ $program->title }}</h1>
                 </div>
@@ -129,7 +129,7 @@
                             @if($program->document_path)
                                 <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e0;">
                                     <strong>📄 Dokumen Pendukung:</strong><br>
-                                    <a href="{{ asset('storage/' . $program->document_path) }}" target="_blank" class="btn btn-secondary btn-block" style="margin-top: 5px; font-size: 12px; text-align: center;">Download Dokumen Pendukung</a>
+                                    <a href="{{ file_url($program->document_path) }}" target="_blank" class="btn btn-secondary btn-block" style="margin-top: 5px; font-size: 12px; text-align: center;">Download Dokumen Pendukung</a>
                                 </div>
                             @endif
                         </div>

@@ -155,7 +155,7 @@ class TrainingController extends Controller
         foreach ($program->requirements as $req) {
             $key = 'req_' . $req->id;
             if ($request->hasFile($key)) {
-                $path = $request->file($key)->store('registrations/documents', 'public');
+                $path = $request->file($key)->store('registrations/documents', upload_disk());
                 RegistrationDocument::create([
                     'training_registration_id' => $registration->id,
                     'program_requirement_id'   => $req->id,

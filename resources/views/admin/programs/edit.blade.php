@@ -35,7 +35,7 @@
                 <input type="file" id="image_file" name="image_file" class="form-control" accept="image/*">
                 @if($program->image_path)
                     <div style="margin-top: 5px;">
-                        <img src="{{ asset('storage/' . $program->image_path) }}" alt="Poster" style="max-height: 100px; border-radius: 4px;">
+                        <img src="{{ file_url($program->image_path) }}" alt="Poster" style="max-height: 100px; border-radius: 4px;">
                     </div>
                 @endif
                 <small>Kosongkan jika tidak ingin mengubah. Format: JPG, PNG, Maks. 2MB</small>
@@ -45,7 +45,7 @@
                 <input type="file" id="document_file" name="document_file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx">
                 @if($program->document_path)
                     <div style="margin-top: 5px;">
-                        <a href="{{ asset('storage/' . $program->document_path) }}" target="_blank">📄 Lihat Dokumen Saat Ini</a>
+                        <a href="{{ file_url($program->document_path) }}" target="_blank">📄 Lihat Dokumen Saat Ini</a>
                     </div>
                 @endif
                 <small>Kosongkan jika tidak ingin mengubah. Format: PDF, Word, Excel, Maks. 10MB</small>
@@ -58,7 +58,7 @@
                 <input type="file" id="template_report_file" name="template_report_file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx">
                 @if($program->template_report_path)
                     <div style="margin-top: 5px;">
-                        <a href="{{ asset('storage/' . $program->template_report_path) }}" target="_blank">📄 Lihat Template Saat Ini</a>
+                        <a href="{{ file_url($program->template_report_path) }}" target="_blank">📄 Lihat Template Saat Ini</a>
                     </div>
                 @endif
                 <small>Khusus peserta di akhir program. Format: PDF/Office (Maks. 10MB)</small>
@@ -68,7 +68,7 @@
                 <input type="file" id="template_report_2_file" name="template_report_2_file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx">
                 @if($program->template_report_2_path)
                     <div style="margin-top: 5px;">
-                        <a href="{{ asset('storage/' . $program->template_report_2_path) }}" target="_blank">📄 Lihat Template Saat Ini</a>
+                        <a href="{{ file_url($program->template_report_2_path) }}" target="_blank">📄 Lihat Template Saat Ini</a>
                     </div>
                 @endif
                 <small>Khusus Pendidikan. Diunduh peserta tiap semester. Format: PDF/Office</small>

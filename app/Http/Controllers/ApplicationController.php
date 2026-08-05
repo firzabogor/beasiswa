@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Models\TrainingRegistration;
 use App\Models\CompanyApplication;
 use App\Models\SelectionDocument;
@@ -97,7 +98,7 @@ class ApplicationController extends Controller
             'status'                   => $request->selection_result === 'passed' ? 'selected' : 'not_selected',
         ]);
 
-        $path = $request->file('document')->store('selection-documents', 'public');
+        $path = $request->file('document')->store('selection-documents', upload_disk());
 
         SelectionDocument::create([
             'company_application_id' => $app->id,
@@ -149,7 +150,7 @@ class ApplicationController extends Controller
             'document.max'              => 'Ukuran file maksimal 5MB.',
         ]);
 
-        $path = $request->file('document')->store('selection-documents', 'public');
+        $path = $request->file('document')->store('selection-documents', upload_disk());
 
         SelectionDocument::create([
             'company_application_id' => $application->id,
@@ -177,7 +178,7 @@ class ApplicationController extends Controller
             abort(404, 'File tidak ditemukan.');
         }
 
-        return response()->download(storage_path('app/public/' . $registration->invitation_letter_path));
+        return Storage::disk(upload_disk())->download($registration->invitation_letter_path);
     }
 
     // ================================================================
@@ -233,14 +234,14 @@ class ApplicationController extends Controller
 
         // Simpan dokumen bukti seleksi jika tidak lolos
         if ($request->selection_final_result === 'not_passed' && $request->hasFile('selection_final_doc')) {
-            $selDocPath = $request->file('selection_final_doc')->store('education/selection-docs', 'public');
+            $selDocPath = $request->file('selection_final_doc')->store('education/selection-docs', upload_disk());
             $updateData['selection_final_doc_path'] = $selDocPath;
         }
 
         // Jika lolos, simpan LOG & LOA
         if ($request->selection_final_result === 'passed') {
-            $updateData['log_path'] = $request->file('log_file')->store('education/logs', 'public');
-            $updateData['loa_path'] = $request->file('loa_file')->store('education/loas', 'public');
+            $updateData['log_path'] = $request->file('log_file')->store('education/logs', upload_disk());
+            $updateData['loa_path'] = $request->file('loa_file')->store('education/loas', upload_disk());
         }
 
         $registration->update($updateData);
@@ -278,7 +279,7 @@ class ApplicationController extends Controller
             'notes'         => 'nullable|string|max:500',
         ]);
 
-        $path = $request->file('document')->store('education/activities', 'public');
+        $path = $request->file('document')->store('education/activities', upload_disk());
 
         EducationActivity::create([
             'training_registration_id' => $registration->id,
@@ -311,8 +312,8 @@ class ApplicationController extends Controller
             'final_document' => 'required|file|mimes:pdf|max:10240',
         ]);
 
-        $reportPath = $request->file('final_report')->store('education/reports', 'public');
-        $docPath = $request->file('final_document')->store('education/final', 'public');
+        $reportPath = $request->file('final_report')->store('education/reports', upload_disk());
+        $docPath = $request->file('final_document')->store('education/final', upload_disk());
 
         $registration->update([
             'final_report_path'      => $reportPath,
@@ -378,11 +379,11 @@ class ApplicationController extends Controller
         ];
 
         if ($request->selection_final_result === 'not_passed' && $request->hasFile('selection_final_doc')) {
-            $updateData['selection_final_doc_path'] = $request->file('selection_final_doc')->store('training/selection-docs', 'public');
+            $updateData['selection_final_doc_path'] = $request->file('selection_final_doc')->store('training/selection-docs', upload_disk());
         }
 
         if ($request->selection_final_result === 'passed') {
-            $updateData['loa_path'] = $request->file('loa_file')->store('training/loas', 'public');
+            $updateData['loa_path'] = $request->file('loa_file')->store('training/loas', upload_disk());
         }
 
         $registration->update($updateData);
@@ -427,7 +428,7 @@ class ApplicationController extends Controller
             'final_report.max'      => 'Ukuran file maksimal 10MB.',
         ]);
 
-        $path = $request->file('final_report')->store('training/reports', 'public');
+        $path = $request->file('final_report')->store('training/reports', upload_disk());
 
         $registration->update([
             'final_report_path' => $path,

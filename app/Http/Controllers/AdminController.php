@@ -14,6 +14,7 @@ use App\Models\ProgramRequirement;
 use App\Models\ProgramTopic;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -170,19 +171,19 @@ class AdminController extends Controller
         $data = $request->only(['title', 'kategori', 'description', 'start_date', 'end_date', 'location', 'quota', 'status', 'execution_start_date', 'execution_end_date']);
 
         if ($request->hasFile('image_file')) {
-            $data['image_path'] = $request->file('image_file')->store('programs/images', 'public');
+            $data['image_path'] = $request->file('image_file')->store('programs/images', upload_disk());
         }
 
         if ($request->hasFile('document_file')) {
-            $data['document_path'] = $request->file('document_file')->store('programs/documents', 'public');
+            $data['document_path'] = $request->file('document_file')->store('programs/documents', upload_disk());
         }
 
         if ($request->hasFile('template_report_file')) {
-            $data['template_report_path'] = $request->file('template_report_file')->store('programs/templates', 'public');
+            $data['template_report_path'] = $request->file('template_report_file')->store('programs/templates', upload_disk());
         }
 
         if ($request->hasFile('template_report_2_file')) {
-            $data['template_report_2_path'] = $request->file('template_report_2_file')->store('programs/templates', 'public');
+            $data['template_report_2_path'] = $request->file('template_report_2_file')->store('programs/templates', upload_disk());
         }
 
         $program = TrainingProgram::create($data);
@@ -276,19 +277,19 @@ class AdminController extends Controller
 
         if ($request->hasFile('image_file')) {
             // Optional: delete old image if needed, for simplicity we just store new one
-            $data['image_path'] = $request->file('image_file')->store('programs/images', 'public');
+            $data['image_path'] = $request->file('image_file')->store('programs/images', upload_disk());
         }
 
         if ($request->hasFile('document_file')) {
-            $data['document_path'] = $request->file('document_file')->store('programs/documents', 'public');
+            $data['document_path'] = $request->file('document_file')->store('programs/documents', upload_disk());
         }
 
         if ($request->hasFile('template_report_file')) {
-            $data['template_report_path'] = $request->file('template_report_file')->store('programs/templates', 'public');
+            $data['template_report_path'] = $request->file('template_report_file')->store('programs/templates', upload_disk());
         }
 
         if ($request->hasFile('template_report_2_file')) {
-            $data['template_report_2_path'] = $request->file('template_report_2_file')->store('programs/templates', 'public');
+            $data['template_report_2_path'] = $request->file('template_report_2_file')->store('programs/templates', upload_disk());
         }
 
         $program->update($data);
@@ -458,7 +459,7 @@ class AdminController extends Controller
 
         // Upload surat pengantar jika ada
         if ($request->hasFile('invitation_letter') && $request->verification_status === 'verified') {
-            $path = $request->file('invitation_letter')->store('invitation-letters', 'public');
+            $path = $request->file('invitation_letter')->store('invitation-letters', upload_disk());
             $data['invitation_letter_path']          = $path;
             $data['invitation_letter_uploaded_at']   = now();
         }
@@ -525,14 +526,14 @@ class AdminController extends Controller
                 if ($reg->requirementDocuments) {
                     foreach ($reg->requirementDocuments as $doc) {
                         $reqName = $doc->requirement->name ?? 'Dokumen';
-                        $url = asset('storage/' . $doc->document_path);
+                        $url = file_url($doc->document_path);
                         $dokumenArr[] = $reqName . ': ' . $url;
                     }
                 }
                 $dokumenStr = implode("\n", $dokumenArr);
 
                 $suratPengantarUrl = $reg->invitation_letter_path 
-                    ? asset('storage/' . $reg->invitation_letter_path) 
+                    ? file_url($reg->invitation_letter_path) 
                     : '-';
 
                 $row = [
@@ -682,7 +683,7 @@ class AdminController extends Controller
     public function downloadSelectionDoc($id)
     {
         $doc = SelectionDocument::findOrFail($id);
-        return response()->download(storage_path('app/public/' . $doc->document_path));
+        return Storage::disk(upload_disk())->download($doc->document_path);
     }
     // ================================================================
     // MANAJEMEN KONSULTASI
@@ -773,7 +774,7 @@ class AdminController extends Controller
             foreach ($registrations as $reg) {
                 $semesterLinks = [];
                 foreach ($reg->educationActivities as $act) {
-                    $semesterLinks[] = $act->semester_name . ': ' . asset('storage/' . $act->document_path);
+                    $semesterLinks[] = $act->semester_name . ': ' . file_url($act->document_path);
                 }
                 $semesterStr = implode("\n", $semesterLinks);
 
@@ -782,11 +783,11 @@ class AdminController extends Controller
                     $reg->user->nip ? '="' . $reg->user->nip . '"' : '-',
                     $reg->user->name ?? '-',
                     $reg->trainingProgram->title ?? '-',
-                    $reg->log_path ? asset('storage/' . $reg->log_path) : '-',
-                    $reg->loa_path ? asset('storage/' . $reg->loa_path) : '-',
+                    $reg->log_path ? file_url($reg->log_path) : '-',
+                    $reg->loa_path ? file_url($reg->loa_path) : '-',
                     $semesterStr ? $semesterStr : '-',
-                    $reg->final_report_path ? asset('storage/' . $reg->final_report_path) : '-',
-                    $reg->final_doc_path ? asset('storage/' . $reg->final_doc_path) : '-'
+                    $reg->final_report_path ? file_url($reg->final_report_path) : '-',
+                    $reg->final_doc_path ? file_url($reg->final_doc_path) : '-'
                 ];
 
                 fputcsv($file, $row, ';');
@@ -851,7 +852,7 @@ class AdminController extends Controller
                     $reg->user->nip ? '="' . $reg->user->nip . '"' : '-',
                     $reg->user->name ?? '-',
                     $reg->trainingProgram->title ?? '-',
-                    $reg->final_report_path ? asset('storage/' . $reg->final_report_path) : '-'
+                    $reg->final_report_path ? file_url($reg->final_report_path) : '-'
                 ];
                 fputcsv($file, $row, ';');
             }
@@ -872,7 +873,7 @@ class AdminController extends Controller
             abort(404, 'Laporan tidak ditemukan.');
         }
 
-        return response()->download(storage_path('app/public/' . $registration->final_report_path));
+        return Storage::disk(upload_disk())->download($registration->final_report_path);
     }
 
     /**

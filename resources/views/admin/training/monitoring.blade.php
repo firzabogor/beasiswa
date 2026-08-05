@@ -64,7 +64,7 @@
                                 @if($reg->selection_final_result === 'passed')
                                     <span class="badge badge-success mb-1" style="font-size:11px;">✅ LOLOS</span><br>
                                     @if($reg->loa_path)
-                                        <a href="{{ asset('storage/' . $reg->loa_path) }}" target="_blank"
+                                        <a href="{{ file_url($reg->loa_path) }}" target="_blank"
                                            class="btn btn-info btn-sm mt-1" style="font-size:10px;">
                                             LOA ⬇️
                                         </a>
@@ -86,7 +86,7 @@
                                 @elseif($reg->selection_final_result === 'not_passed')
                                     <span class="badge badge-danger mb-1" style="font-size:11px;">❌ TDK LOLOS</span><br>
                                     @if($reg->selection_final_doc_path)
-                                        <a href="{{ asset('storage/' . $reg->selection_final_doc_path) }}" target="_blank"
+                                        <a href="{{ file_url($reg->selection_final_doc_path) }}" target="_blank"
                                            class="btn btn-secondary btn-sm mt-1" style="font-size:10px;">
                                             Bukti ⬇️
                                         </a>

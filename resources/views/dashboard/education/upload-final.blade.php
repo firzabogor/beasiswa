@@ -19,7 +19,7 @@
                 <div style="font-weight: 700; color: #1a3a6c; font-size: 14px; margin-bottom: 4px;">Template Laporan Akhir Tersedia</div>
                 <div style="font-size: 12px; color: #555;">Unduh template dari admin sebagai panduan mengisi laporan akhir Anda.</div>
             </div>
-            <a href="{{ asset('storage/' . $registration->trainingProgram->template_report_path) }}"
+            <a href="{{ file_url($registration->trainingProgram->template_report_path) }}"
                download
                style="background: #1a3a6c; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap;">
                 ⬇️ Unduh Template

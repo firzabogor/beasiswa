@@ -68,7 +68,7 @@
                             <div style="font-weight: 700; color: #1a3a6c;">{{ $doc->requirement->name }}</div>
                             <div style="font-size: 11px; color: #888;">Diunggah: {{ $doc->created_at->format('d M Y') }}</div>
                         </div>
-                        <a href="{{ asset('storage/' . $doc->document_path) }}" target="_blank" class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 11px; display: flex; align-items: center; gap: 5px; text-decoration:none;">
+                        <a href="{{ file_url($doc->document_path) }}" target="_blank" class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 11px; display: flex; align-items: center; gap: 5px; text-decoration:none;">
                             👁️ Lihat
                         </a>
                     </div>

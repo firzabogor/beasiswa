@@ -501,7 +501,7 @@
                 @foreach($reg->requirementDocuments as $doc)
                     <li style="margin-bottom: 4px;">
                         <strong>{{ $doc->requirement->name ?? 'Dokumen' }}</strong> - 
-                        <a href="{{ asset('storage/' . $doc->document_path) }}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Lihat File ⬇️</a>
+                        <a href="{{ file_url($doc->document_path) }}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Lihat File ⬇️</a>
                     </li>
                 @endforeach
             </ul>
@@ -543,7 +543,7 @@
                         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                             <a href="{{ url('/registrasi/' . $reg->id . '/surat-pengantar') }}" class="btn btn-success btn-sm">⬇️ Unduh Surat Rekomendasi</a>
                             @if($reg->selection_final_doc_path)
-                                <a href="{{ asset('storage/' . $reg->selection_final_doc_path) }}" target="_blank" style="font-size:13px;color:var(--primary-color);">Lihat Dokumen Bukti Seleksi ⬇️</a>
+                                <a href="{{ file_url($reg->selection_final_doc_path) }}" target="_blank" style="font-size:13px;color:var(--primary-color);">Lihat Dokumen Bukti Seleksi ⬇️</a>
                             @endif
                         </div>
                     </div>
@@ -579,7 +579,7 @@
                         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
                             <a href="{{ url('/registrasi/' . $reg->id . '/surat-pengantar') }}" class="btn btn-success btn-sm">⬇️ Unduh Surat Rekomendasi</a>
                             @if($reg->loa_path)
-                                <a href="{{ asset('storage/' . $reg->loa_path) }}" target="_blank" class="btn btn-info btn-sm" style="background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; text-decoration:none;">⬇️ Lihat LOA Anda</a>
+                                <a href="{{ file_url($reg->loa_path) }}" target="_blank" class="btn btn-info btn-sm" style="background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; text-decoration:none;">⬇️ Lihat LOA Anda</a>
                             @endif
                         </div>
                         <div style="border-top:1px dashed #c6e3cc;padding-top:15px;">
@@ -596,7 +596,7 @@
                             <a href="{{ url('/registrasi/' . $reg->id . '/surat-pengantar') }}" class="btn btn-success btn-sm">⬇️ Unduh Surat Rekomendasi</a>
                             <span style="font-size:13px;color:#28a745;font-weight:700;">✅ Laporan Akhir Sudah Diunggah</span>
                         </div>
-                        <a href="{{ asset('storage/' . $reg->final_report_path) }}" target="_blank" style="display:block;margin-top:10px;font-size: 13px; color: var(--primary-color);">Lihat Laporan Akhir ⬇️</a>
+                        <a href="{{ file_url($reg->final_report_path) }}" target="_blank" style="display:block;margin-top:10px;font-size: 13px; color: var(--primary-color);">Lihat Laporan Akhir ⬇️</a>
                     </div>
                 @endif
             @elseif($isTugasBelajar)
@@ -613,7 +613,7 @@
                                 @foreach($reg->educationActivities as $act)
                                     <div style="display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px solid #eee; padding: 4px 0;">
                                         <span>{{ $act->semester_name }}</span>
-                                        <a href="{{ asset('storage/' . $act->document_path) }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">Download ⬇️</a>
+                                        <a href="{{ file_url($act->document_path) }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">Download ⬇️</a>
                                     </div>
                                 @endforeach
                             </div>
@@ -634,7 +634,7 @@
                             <a href="{{ url('/registrasi/' . $reg->id . '/surat-pengantar') }}" class="btn btn-success btn-sm">⬇️ Unduh Surat Tugas Belajar</a>
                         </div>
                         @if($reg->final_doc_path)
-                             <a href="{{ asset('storage/' . $reg->final_doc_path) }}" target="_blank" style="font-size: 13px; color: var(--primary-color);">Lihat Berkas Akhir / Ijazah ⬇️</a>
+                             <a href="{{ file_url($reg->final_doc_path) }}" target="_blank" style="font-size: 13px; color: var(--primary-color);">Lihat Berkas Akhir / Ijazah ⬇️</a>
                         @endif
                     </div>
                 @endif
@@ -650,7 +650,7 @@
                         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                             <a href="{{ url('/registrasi/' . $reg->id . '/surat-pengantar') }}" class="btn btn-success btn-sm">⬇️ Unduh Surat Rekomendasi</a>
                             @if($reg->selection_final_doc_path)
-                                <a href="{{ asset('storage/' . $reg->selection_final_doc_path) }}" target="_blank" style="font-size:13px;color:var(--primary-color);">Lihat Dokumen Seleksi ⬇️</a>
+                                <a href="{{ file_url($reg->selection_final_doc_path) }}" target="_blank" style="font-size:13px;color:var(--primary-color);">Lihat Dokumen Seleksi ⬇️</a>
                             @endif
                         </div>
                     </div>
@@ -690,7 +690,7 @@
                                 @foreach($reg->educationActivities as $act)
                                     <div style="display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px solid #eee; padding: 4px 0;">
                                         <span>{{ $act->semester_name }}</span>
-                                        <a href="{{ asset('storage/' . $act->document_path) }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">Download ⬇️</a>
+                                        <a href="{{ file_url($act->document_path) }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">Download ⬇️</a>
                                     </div>
                                 @endforeach
                             </div>
@@ -712,7 +712,7 @@
                             <a href="{{ url('/registrasi/' . $reg->id . '/surat-pengantar') }}" class="btn btn-success btn-sm">⬇️ Unduh Surat Rekomendasi</a>
                         </div>
                         @if($reg->final_doc_path)
-                             <a href="{{ asset('storage/' . $reg->final_doc_path) }}" target="_blank" style="font-size: 13px; color: var(--primary-color);">Lihat Berkas Akhir / Ijazah ⬇️</a>
+                             <a href="{{ file_url($reg->final_doc_path) }}" target="_blank" style="font-size: 13px; color: var(--primary-color);">Lihat Berkas Akhir / Ijazah ⬇️</a>
                         @endif
                     </div>
                 @endif

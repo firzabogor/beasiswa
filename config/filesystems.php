@@ -17,6 +17,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Upload Disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk yang dipakai seluruh fitur upload. Jika FILESYSTEM_DISK bernilai
+    | "s3" maka file disimpan di Amazon S3, selain itu memakai disk "public"
+    | lokal (storage/app/public) yang dapat diakses via symbolic link.
+    |
+    */
+
+    'uploads' => env('FILESYSTEM_DISK', 'local') === 's3' ? 's3' : 'public',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Masa Berlaku Presigned URL (menit)
+    |--------------------------------------------------------------------------
+    |
+    | Lama berlakunya presigned URL S3 yang dihasilkan helper file_url().
+    |
+    */
+
+    'temporary_url_expiry' => (int) env('AWS_TEMP_URL_EXPIRY', 30),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

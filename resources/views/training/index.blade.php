@@ -61,7 +61,7 @@
         @forelse($programs as $program)
             <a href="{{ url('/diklat/' . $program->id) }}" class="program-card-link" style="text-decoration: none; color: inherit; transition: transform 0.2s;">
                 <div class="program-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #eee; height: 100%;">
-                    <div class="program-image" style="background-image: url('{{ $program->image_path ? asset('storage/' . $program->image_path) : asset('img/default-program.jpg') }}'); background-size: cover; background-position: center; height: 180px; width: 100%; position: relative;">
+                    <div class="program-image" style="background-image: url('{{ $program->image_path ? file_url($program->image_path) : asset('img/default-program.jpg') }}'); background-size: cover; background-position: center; height: 180px; width: 100%; position: relative;">
                         @if(!$program->image_path)
                             <div class="placeholder-img" style="height: 100%; background: #edf2f7; display: flex; align-items: center; justify-content: center; color: #a0aec0;">
                                 <span>No Poster</span>
