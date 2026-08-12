@@ -82,7 +82,7 @@ class AdminController extends Controller
         }
 
         // Dropdown data
-        $availableYears = TrainingProgram::selectRaw('YEAR(start_date) as year')
+        $availableYears = TrainingProgram::selectRaw('EXTRACT(YEAR FROM start_date) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
@@ -116,7 +116,7 @@ class AdminController extends Controller
         $programs = $query->orderBy('created_at', 'desc')->paginate(10);
         
         // Ambil daftar tahun unik dari start_date untuk filter
-        $years = TrainingProgram::selectRaw('YEAR(start_date) as year')
+        $years = TrainingProgram::selectRaw('EXTRACT(YEAR FROM start_date) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');

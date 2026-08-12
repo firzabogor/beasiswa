@@ -30,7 +30,7 @@ class TrainingController extends Controller
             ->get();
 
         // Get all unique years for the filter
-        $years = TrainingProgram::selectRaw('YEAR(start_date) as year')
+        $years = TrainingProgram::selectRaw('EXTRACT(YEAR FROM start_date) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
